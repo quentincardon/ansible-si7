@@ -31,3 +31,41 @@
      apt:        
       name: php       
       state: present
+- name: Installation de Mysql   
+  hosts: all  
+  tasks:
+   - name: Installer le module Python pour Mysql      
+     pip:        
+      name: PyMySQL  
+   - name: Installation mysql-server
+     apt:        
+      name: mysql-server       
+      state: present
+   - name: Gestion du my.cnf     
+     copy:        
+      src: /root/autres/my.cnf.j2       
+      dest: /root/.my.cnf        
+      owner: root        
+      group: root       
+      mode: 0600
+   - name: Démarrer le service mysql      
+     service:        
+      name: mysql        
+      state: restarted        
+   - name: Gestion du mot de passe du root
+     mysql_user:        
+      name: root        
+      password: btsinfo        
+      login_unix_socket: /var/run/mysqld/mysqld.sock 
+   - name: Création d'une base de données          
+     mysql_db:            
+      name: "{{mysql_db}}"        
+      state: present          
+      login_unix_socket: /var/run/mysqld/mysqld.sock  
+   - name: Création de l'utilisateur eleve et affectation des privilèges sur une base de données     
+     mysql_user:
+      name: "{{mysql_user}}"        
+      password: "{{mysql_password}}"        
+      host: localhost        
+      priv: "{{mysql_db}}.*:ALL,GRANT"        
+      login_unix_socket: /var/run/mysqld/mysqld.sock
